@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icone192.png">
+<meta name="theme-color" content="#004899">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Visualiser les courses et sa place dans le Challenge des Chiens d'Or</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #d0d0d0;
+      margin: 0;
+      padding-top: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .hidden { display: none !important; }
+    .logo {
+      max-width: 250px;
+      margin-top: 20px;
+      margin-bottom: 20px;
+      display: block;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    h1 {
+      color: #000;
+      background-color: #fff;
+      text-align: center;
+      font-size: 1.5em;
+      border-radius: 8px;
+      padding: 1em;
+      margin-bottom: 2em;
+      width: 90%;
+      max-width: 600px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    }
+    .menu-button {
+      padding: 1em 2em;
+      margin: 0.5em;
+      font-size: 1.1em;
+      border-radius: 8px;
+      border: none;
+      color: white;
+      background-color: #318CE7;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      min-width: 280px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    .menu-button:hover { background-color: #256bb5; }
+    .button-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1em;
+      width: 90%;
+      max-width: 700px;
+      margin-bottom: 2em;
+    }
+    .menu {
+      display: flex;
+      flex-direction: column;
+      gap: 1em;
+      align-items: center;
+      max-width: 400px;
+      margin: 2em auto;
+    }
+    .menu a {
+      text-decoration: none;
+      padding: 1em 2em;
+      background-color: #007BFF;
+      color: white;
+      border-radius: 8px;
+      font-weight: bold;
+      width: 100%;
+      transition: background-color 0.3s;
+    }
+    .menu a:hover { background-color: #0056b3; }
+    .menu button {
+      padding: 1em 2em;
+      background-color: #6c757d;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      width: 100%;
+    }
+    .menu button:hover { background-color: #5a6268; }
+    footer {
+      margin-top: auto;
+      padding: 1em;
+      font-size: 0.9em;
+      color: #555;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 🖼️ Logo et titre -->
+  <img src="https://www.hebergeur-image.com/upload/113.21.122.137-6881f11756c61.png" alt="Logo FFSLC" class="logo" id="logo" />
+  <h1 id="titre">🏆 VISUALISER SES COURSES OU<br>SA PLACE DANS LE CHALLENGE DES CHIENS D'OR</h1>
+
+  <!-- 🟦 Menu principal -->
+  <div class="button-grid" id="main-menu">
+    <button class="menu-button" onclick="afficherChallenge()">📊 Visualisation de sa place dans le Challenge</button>
+    <button class="menu-button" onclick="afficherCourses()">🐾 Visualisation de ses courses de la saison</button>
+    <button class="menu-button" onclick="window.location.href='https://6bhw2jtiv4np7q3y0in8yq.on.drv.tw/essai/consultation%20classement%20chiens%20dorv.html'"> 📅 Consultation Classement Chiens d'Or par saisons</button>
+    <button class="menu-button" onclick="window.location.href='https://6bhw2jtiv4np7q3y0in8yq.on.drv.tw/essai/consultation%20resultats%201.html'">📝 Consultation des résultats</button>
+  </div>
+
+  <!-- 🔎 Section Challenge -->
+  <div id="section-challenge" style="display:none;">
+    <h2 style="color: #007BFF;">📂 Outils de recherche FFSLC — dans le challenge Chiens d'Or</h2>
+    <div class="menu">
+      <a href="https://6bhw2jtiv4np7q3y0in8yq.on.drv.tw/essai/recherche%20classement%20cd%20par%20licence%20v21.html">🔖 Recherche par Licence</a>
+      <a href="https://6bhw2jtiv4np7q3y0in8yq.on.drv.tw/essai/recherche%20classement%20cd%20par%20nom%20et%20pr%C3%A9nom%20v41.html">👤 Recherche par Nom + Prénom</a>
+      <button onclick="retourAccueil()">⬅️ Retour</button>
+    </div>
+  </div>
+
+  <!-- 🐾 Section Courses -->
+  <div id="section-courses" style="display:none;">
+    <h2 style="color: #007BFF;">📂 Outils de recherche FFSLC — des courses de la saison</h2>
+    <div class="menu">
+      <a href="https://6bhw2jtiv4np7q3y0in8yq.on.drv.tw/essai/recherche%20course%20par%20licence.html">🔖 Recherche par Licence</a>
+      <a href="https://6bhw2jtiv4np7q3y0in8yq.on.drv.tw/essai/recherche%20course%20par%20nom%20et%20pr%C3%A9nom.html">👤 Recherche par Nom + Prénom</a>
+      <button onclick="retourAccueil()">⬅️ Retour</button>
+    </div>
+  </div>
+
+  <!-- 📝 Footer -->
+  <footer>🛠️ Créé par <strong>Robert AURAY</strong></footer>
+
+  <!-- 🧠 Script d’interaction -->
+  <script>
+    function masquerAccueil() {
+      document.getElementById('logo').classList.add('hidden');
+      document.getElementById('titre').classList.add('hidden');
+      document.getElementById('main-menu').classList.add('hidden');
+      window.scrollTo({ top: 0, behavior: 'auto' });
+    }
+
+    function afficherChallenge() {
+      masquerAccueil();
+      document.getElementById('section-challenge').style.display = 'block';
+      document.getElementById('section-courses').style.display = 'none';
+    }
+
+    function afficherCourses() {
+      masquerAccueil();
+      document.getElementById('section-courses').style.display = 'block';
+      document.getElementById('section-challenge').style.display = 'none';
+    }
+
+    function retourAccueil() {
+      document.getElementById('logo').classList.remove('hidden');
+      document.getElementById('titre').classList.remove('hidden');
+      document.getElementById('main-menu').classList.remove('hidden');
+      document.getElementById('section-challenge').style.display = 'none';
+      document.getElementById('section-courses').style.display = 'none';
+      window.scrollTo({ top: 0, behavior: 'auto' });
+    }
+  </script>
+
+</body>
+</html>
