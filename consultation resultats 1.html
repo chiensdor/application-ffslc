@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Chargement FFSLC</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+      overflow-x: hidden;
+      text-align: center;
+    }
+
+    #introBanner {
+      background-color: #0055A4;
+      color: white;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      font-weight: bold;
+      z-index: 10;
+      transition: all 1s ease-in-out;
+    }
+
+    #introBanner.shrink {
+      height: 60px;
+      font-size: 1.4rem;
+    }
+
+    #spreadsheet {
+      margin: 100px auto 20px auto;
+      width: 800px;
+      height: 500px;
+      border: none;
+      box-shadow: 0 0 12px rgba(0,0,0,0.2);
+      display: none;
+    }
+
+    #backButton {
+      font-size: 1rem;
+      background-color: #0055A4;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      box-shadow: 0 0 8px rgba(0,0,0,0.15);
+      margin-bottom: 40px;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    #backButton:hover {
+      background-color: white;
+      color: #0055A4;
+      border: 2px solid #0055A4;
+    }
+
+    span.ff {
+      color: #0055A4;
+      text-shadow: 1px 1px 2px white;
+    }
+
+    span.s {
+      color: #FFFFFF;
+      text-shadow: 1px 1px 2px black;
+    }
+
+    span.lc {
+      color: #EF4135;
+      text-shadow: 1px 1px 2px black;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Bandeau FFSLC -->
+  <div id="introBanner">
+ Résultat des courses&nbsp;&nbsp;
+  <span class="ff">FF</span><span class="s">S</span><span class="lc">LC</span>
+  </div>
+
+  <!-- Tableau Sheets -->
+   <iframe id="spreadsheet"
+    src="https://docs.google.com/spreadsheets/d/e/2PACX-1vTZ3SY33A0be7kGcKd4uFEKRlaJ5sDrpUH1LIKvDd1IWhpz3XU8RuFNOhg8DjY2SK4GMAUdt-2cFMF5/pubhtml?gid=0&single=true&widget=true&headers=false">
+  </iframe>
+
+
+  <!-- Bouton retour -->
+  <div>
+    <button id="backButton" onclick="history.back()">← Retour au menu précédent</button>
+  </div>
+
+  <script>
+    window.addEventListener("load", function() {
+      setTimeout(() => {
+        document.getElementById("introBanner").classList.add("shrink");
+        document.getElementById("spreadsheet").style.display = "block";
+      }, 1500);
+    });
+  </script>
+</body>
+</html>
