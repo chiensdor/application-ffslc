@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Consultation des classements</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f8f8f8;
+      margin: 0;
+      padding: 20px;
+      color: #003366;
+    }
+
+    #intro-logo {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 500px;
+      z-index: 1000;
+      transition: width 1s ease, top 1s ease, transform 1s ease;
+    }
+
+    #intro-logo.reduit {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+    }
+
+    header h1 {
+      font-size: 24px;
+      text-align: center;
+      margin-top: 140px;
+      color: #003366;
+    }
+
+    h2 {
+      font-size: 18px;
+      margin-bottom: 8px;
+      color: #003366;
+    }
+
+    .menu-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+      margin-bottom: 30px;
+    }
+
+    .menu-section {
+      max-width: 260px;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-bottom: 6px;
+      font-size: 15px;
+    }
+
+    select {
+      font-size: 15px;
+      padding: 8px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      background-color: #fff;
+      color: #003366;
+      width: 100%;
+    }
+
+    select:focus {
+      border-color: #003366;
+      box-shadow: 0 0 5px rgba(0, 51, 102, 0.3);
+      outline: none;
+    }
+
+    .back-button {
+      display: block;
+      margin: 40px auto 0;
+      padding: 12px 20px;
+      background-color: #003366;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: bold;
+      text-align: center;
+      width: fit-content;
+    }
+
+    .back-button:hover {
+      background-color: #002855;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 50px;
+      font-size: 14px;
+      color: #003366;
+    }
+  </style>
+</head>
+<body>
+  <img id="intro-logo" src="https://www.hebergeur-image.com/upload/113.21.122.137-6881f18b384e5.jpg" alt="Logo Chiens d'Or" />
+
+  <header>
+    <h1>Consultation des classements du challenge des chiens d'or</h1>
+  </header>
+
+  <div class="menu-container">
+    <!-- Bloc 2000–2010 -->
+    <div class="menu-section">
+      <h2>Saisons 2000–2010</h2>
+      <label for="saisons-2000">Sélectionnez une saison :</label>
+      <select id="saisons-2000">
+        <option value="">-- Choisir --</option>
+        <option value="2005-2006">Saison 2005-2006</option>
+        <option value="2006-2007">Saison 2006-2007</option>
+        <option value="2007-2008">Saison 2007-2008</option>
+        <option value="2008-2009">Saison 2008-2009</option>
+        <option value="2009-2010">Saison 2009-2010</option>
+      </select>
+    </div>
+
+    <!-- Bloc 2011–2019 -->
+    <div class="menu-section">
+      <h2>Saisons 2011–2019</h2>
+      <label for="saisons-2011">Sélectionnez une saison :</label>
+      <select id="saisons-2011">
+        <option value="">-- Choisir --</option>
+        <option value="2010-2011">Saison 2010-2011</option>
+        <option value="2012-2013">Saison 2012-2013</option>
+        <option value="2013-2014">Saison 2013-2014</option>
+        <option value="2014-2015">Saison 2014-2015</option>
+        <option value="2016">Saison 2016</option>
+        <option value="2017">Saison 2017</option>
+        <option value="2018">Saison 2018</option>
+        <option value="2019">Saison 2019</option>
+      </select>
+    </div>
+
+    <!-- Bloc 2020–2030 -->
+    <div class="menu-section">
+      <h2>Saisons 2020–2030</h2>
+      <label for="saisons-2020">Sélectionnez une saison :</label>
+      <select id="saisons-2020">
+        <option value="">-- Choisir --</option>
+        <option value="2020">Saison 2020</option>
+        <option value="2021-2022">Saison 2021-2022</option>
+        <option value="2022-2023">Saison 2022-2023</option>
+        <option value="2023-2024">Saison 2023-2024</option>
+        <option value="2024-2025">Saison 2024-2025</option>
+        <option value="2025-2026">Saison 2025-2026</option>
+        <option value="2026-2027">Saison 2026-2027</option>
+        <option value="2027-2028">Saison 2027-2028</option>
+        <option value="2028-2029">Saison 2028-2029</option>
+        <option value="2029-2030">Saison 2029-2030</option>
+      </select>
+    </div>
+  </div>
+
+  <a href="menu principale.html" class="back-button">Retour menu précédent</a>
+  <footer>🛠️ Créé par <strong>Robert AURAY. Version 1.14</strong></footer>
+
+  <script>
+    window.addEventListener('load', () => {
+      const logo = document.getElementById('intro-logo');
+      setTimeout(() => {
+        logo.classList.add('reduit');
+
+        document.querySelectorAll('.menu-section').forEach((bloc, i) => {
+          setTimeout(() => {
+            bloc.style.transition = 'all 0.6s ease';
+            bloc.style.opacity = '1';
+            bloc.style.transform = 'translateY(0)';
+          }, 200 + i * 100);
+        });
+      }, 1000);
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+    const mapping = {
+        'saisons-2000': {
+          '2000-2001': 'en cours de mise en place',
+          '2001-2002': 'en cours de mise en place',
+          '2002-2003': 'en cours de mise en place',
+          '2003-2004': 'en cours de mise en place',
+          '2004-2005': 'en cours de mise en place',
+          '2005-2006': 'https://drive.google.com/file/d/1vxSRnPH-fMyfGb4BzHSv4dsNxI0vVcKf/view',
+          '2006-2007': 'https://drive.google.com/file/d/1JsnHOayE-0am5ezrgN_j2Jqm_foT7m5v/view',
+          '2007-2008': 'https://drive.google.com/file/d/1ypWy3BwotG1UaC4Inb6GDS0y5iIE4H0m/view',
+          '2008-2009': 'https://drive.google.com/file/d/1EE2TlIgrL7yEPnsFqKexa6GoY4A6IIl7/view',
+          '2009-2010': 'https://drive.google.com/file/d/1nH3_aXr0kBLjw2lLH6-vQ3FOIxT2I02G/view?usp=drive_link'
+        },
+        'saisons-2011': {
+          '2010-2011': 'https://drive.google.com/file/d/1asWK785CvWwB9SLLUt_s7tIh_UhW-E-e/view?usp=drive_link',
+          '2011-2012': 'en cours de mise en place',
+          '2012-2013': 'https://drive.google.com/file/d/1um8viOutLQ-_Ka1uwpqXeZ4L_Y2VkQUs/view?usp=drive_link',
+          '2013-2014': 'https://drive.google.com/file/d/1cLF47pZ1kt_cd3LfyMb6nm_OgODtZOmT/view?usp=drive_link',
+          '2014-2015': 'https://drive.google.com/file/d/1ObFiTYcDRm3GSjwaKEV8naprRQ-xVjmt/view?usp=drive_link',
+          '2016': 'https://drive.google.com/file/d/0B0MFT5eeAez1YkhSTWNteE9LUG8/view?usp=drive_link&resourcekey=0-UBxMF0xNf6yZqbX_UZrmYw',
+          '2017': 'https://drive.google.com/file/d/1pn5MJP-pjXFDVD4Fvi3AMKhyympLwhhI/view?usp=drive_link',
+          '2018': 'https://drive.google.com/file/d/16hf1oKWIAa9TRv5rSLblCMpUwJU8JJvf/view?usp=sharing',
+          '2019': 'https://drive.google.com/file/d/1lDtI4tUm1D00eaeXQ3JFLEQAmtYSeKLH/view?usp=sharing'
+         },
+        'saisons-2020': {
+          '2020': 'https://drive.google.com/file/d/1BiSa5wZurU2EhcvYIXI2EekI4bPRtVCy/view?usp=sharing',
+          '2021-2022': 'https://drive.google.com/file/d/1AGMN_qkWhg_jRLrQyTh0XeQDCFf-5LyM/view?usp=sharing',
+          '2023': 'https://drive.google.com/file/d/1njasVfP4YIqWocYyjg5ncnV-HMEMT9oJ/view?usp=sharing',
+          '2023-2024': 'https://drive.google.com/file/d/1hC3xaOOp-4F7QXQ_RqnEojw7_iLr7MlK/view?usp=sharing',
+          '2024-2025': 'https://6bhw2jtiv4np7q3y0in8yq.on.drv.tw/essai/acc%C3%A8s%20fichier%20classement%20CD.html?fbclid=IwY2xjawLvV_RleHRuA2FlbQIxMQABHu9c0ReKwSczaMu9v05HyaETWdOlUo9n6lloFFNVrgCAUWOUfQiWzFaVoXiz_aem_thaFWczSlf8AwPLleve-Wg',
+          '2025-2026': 'https://6bhw2jtiv4np7q3y0in8yq.on.drv.tw/essai/acc%C3%A8s%20fichier%20classement%20CD2025-2026.html',
+          '2026-2027': 'https://6bhw2jtiv4np7q3y0in8yq.on.drv.tw/essai/acc%C3%A8s%20fichier%20classement%20CD2026-2027.html',
+          '2027-2028': 'https://6bhw2jtiv4np7q3y0in8yq.on.drv.tw/essai/acc%C3%A8s%20fichier%20classement%20CD2027-2028.html',
+          '2028-2029': 'https://6bhw2jtiv4np7q3y0in8yq.on.drv.tw/essai/acc%C3%A8s%20fichier%20classement%20CD2028-2029.html',
+          '2029-2030': 'https://6bhw2jtiv4np7q3y0in8yq.on.drv.tw/essai/acc%C3%A8s%20fichier%20classement%20CD2029-2030.html'
+        }
+      };
+
+
+
+    Object.keys(mapping).forEach(selectId => {
+      const select = document.getElementById(selectId);
+      if (!select) return;
+      const saisonMap = mapping[selectId];
+
+      select.addEventListener('change', () => {
+        const selected = select.value;
+        const url = saisonMap[selected];
+        if (!url) return;
+
+        if (url === 'en cours de mise en place') {
+          alert(`⚠️ La saison ${selected} est en cours de mise en place.`);
+        } else {
+          window.open(url, '_blank');
+        }
+      });
+    });
+  });
+</script>
