@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🔍 Challenge des Chiens d'Or — Recherche</title>
+  <style>
+    body { font-family: sans-serif; background: #f4f7fa; padding: 1em; margin: 0; }
+    h1, #disciplineBlock { text-align: center; color: #007BFF; font-size: 1.4em; margin-bottom: 0.5em; }
+    #feedback { text-align: center; font-weight: bold; margin-bottom: 1em; }
+    .controls { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5em; margin-bottom: 1em; }
+    input, button { padding: 0.5em; border-radius: 4px; border: 1px solid #ccc; }
+    input[type="text"] { width: 200px; }
+    button { background-color: #007BFF; color: white; border: none; cursor: pointer; }
+    button:hover { background-color: #0056b3; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1em; }
+    th, td { border: 1px solid #ccc; padding: 0.5em; text-align: left; font-size: 0.9em; }
+    th { background-color: #007BFF; color: white; }
+    .category-row { background-color: #e0ebff; font-weight: bold; }
+    @media screen and (max-width: 600px) {
+      table, thead, tbody, th, td, tr { display: block; }
+      tr { margin-bottom: 1em; background: #fff; border-radius: 4px; }
+      td { padding: 0.5em; border-bottom: 1px solid #ccc; }
+ }
+
+
+  </style>
+</head>
+<body>
+<h1>🔍 Challenge des Chiens d'Or — Recherche par nom et prénom</h1>
+<details id="disciplineBlock" style="font-size: 1.25em; color: #000; margin: 1em 0;">
+  <summary style="font-weight: bold; cursor: pointer; color: #C00000;">📚 Abrévation des catégories par disciplines.</summary>
+  <pre style="white-space: pre-wrap; margin-top: 0.5em;">
+"CANICROSS": CFB - CHB - CFM - CHM - CFC - CHC - CFJ - CHJ - CFS - CHS - CFV1 - CHV1 - CFV2 - CHV2 - CFV3 - CHV3 - HEF - HEG - HDCF - HDCH,
+
+"CANIVTT": VFC - VHC - VFJ - VHJ - VFS  - VHS - VFV1 - VHV1 - VFV2 - VHV2 - VFV3 - VHV3 - HDVF - HDVH,
+
+"CANITROTT": CPFJ - CPHJ - CPFS - CPHS - CPFV - CPHV - CPFA - CPHA - HDTF - HDTH,
+
+"CANITRAIL": CTFJ - CTHJ - CTFS - CTHS - CTFV1 - CTHV1 - CTFV2 - CTHV2 - CTFV3 - CTHV3,
+
+"CANIMARCHE/CANIRANDONNEE": CMFC - CMHC - CMFJ - CMHJ - CMFS - CMHS - CMFV - CMHV - CRFC - CRHC - CRFJ - CRHJ - CRFS - CRHS - CRFV - CRHV,
+
+"SKI JOERING": SJF - SJH,
+  </pre>
+</details>
+<div class="controls">
+  <input type="text" id="nomInput" placeholder="Nom" />
+  <input type="text" id="prenomInput" placeholder="Prénom" />
+  <button onclick="search()">Rechercher</button>
+  <button onclick="reset()">🔁 Réinitialiser</button>
+  <button onclick="exportCSV()">📁 Export CSV</button>
+  <button onclick="exportPDF()">🖨️ Export PDF</button>
+  <button onclick="window.history.back()">⬅️ Retour</button>
+</div>
+
+<div id="feedback">⏳ Chargement du fichier...</div>
+
+<table id="resultsTable">
+  <thead>
+    <tr>
+      <th>Classement</th><th>Nom</th><th>Prénom</th><th>Club</th><th>Nom du chien</th><th>Nombre de course</th><th>Total Top 5</th>
+      <th>Course 1</th><th>Course 2</th><th>Course 3</th>
+      <th>Course 4</th><th>Course 5</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+<script>
+const csvURL = 'https://raw.githubusercontent.com/chiensdor/fichier-canicross/refs/heads/main/classement%20CD.csv';
+let rawCSVLines = [], headers = [], mapKeys = {};
+const separator = ';';
+const alias = {
+  classement: ['classement'],
+  nom: ['nom'],
+  prenom: ['prenom', 'prénom'],
+  discipline: ['categorie', 'catégorie'],
+  'club': ['Club', 'club'],
+  'nom du chien': ['nom du chien', 'chien'],
+  'nombre de course': ['nombre de course', 'nombre de courses'],
+  'total points': ['total points', 'Total Top 5', 'Total', 'total top 5'],
+  'course 1': ['course 1'],
+  'course 2': ['course 2'],
+  'course 3': ['course 3'],
+  'course 4': ['course 4'],
+  'course 5': ['course 5']
+};
+
+function normalize(str) {
+  return str.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/ï»¿/g, '').replace(/\s+/g, ' ').trim();
+}
+
+fetch(csvURL)
+  .then(response => response.text())
+  .then(text => {
+    const rows = text.split('\n').filter(r => r.trim());
+    headers = rows[0].split(separator).map(h => h.trim());
+    rawCSVLines = rows.slice(1);
+    headers.forEach(h => {
+      const key = normalize(h);
+      Object.entries(alias).forEach(([stdKey, variants]) => {
+        if (variants.includes(key)) mapKeys[stdKey] = h;
+      });
+    });
+    document.getElementById('feedback').textContent = `✅ Fichier chargé (${rawCSVLines.length} lignes)`;
+  })
+  .catch(() => {
+    document.getElementById('feedback').textContent = '❌ Échec du chargement du fichier';
+  });
+
+function search() {
+  const nomVal = normalize(document.getElementById('nomInput').value);
+  const prenomVal = normalize(document.getElementById('prenomInput').value);
+  const results = [];
+
+  rawCSVLines.forEach(line => {
+    const values = line.split(separator).map(v => v.trim());
+    const rowObj = headers.reduce((obj, h, i) => { obj[h] = values[i] || ''; return obj; }, {});
+    const nom = normalize(rowObj[mapKeys['nom']] || '');
+    const prenom = normalize(rowObj[mapKeys['prenom']] || '');
+    if ((nomVal ? nom.includes(nomVal) : true) && (prenomVal ? prenom.includes(prenomVal) : true)) {
+      results.push(rowObj);
+    }
+  });
+
+  const tbody = document.querySelector('#resultsTable tbody');
+  tbody.innerHTML = '';
+  if (!results.length) {
+    document.getElementById('feedback').textContent = '❌ Aucun résultat';
+    return;
+  }
+
+  document.getElementById('feedback').textContent = `🔎 ${results.length} résultat(s) trouvé(s)`;
+
+  let totalByDiscipline = {};
+  rawCSVLines.forEach(line => {
+    const values = line.split(separator).map(v => v.trim());
+    const rowObj = headers.reduce((obj, h, i) => { obj[h] = values[i] || ''; return obj; }, {});
+    const discipline = rowObj[mapKeys['discipline']] || '';
+    totalByDiscipline[discipline] = (totalByDiscipline[discipline] || 0) + 1;
+  });
+
+  let lastDiscipline = '';
+  results.forEach(obj => {
+    const discipline = obj[mapKeys['discipline']] || '';
+    const totalClassés = totalByDiscipline[discipline] || 0;
+
+    if (discipline !== lastDiscipline) {
+      const trGroup = document.createElement('tr');
+      trGroup.className = 'category-row';
+      trGroup.innerHTML = `
+        <td colspan="12" style="text-align:center; font-weight:bold; font-size:1.05em; color:#333;">
+          🐾 Catégorie : <span style="color:#007BFF;">${discipline}</span> — 
+          <span style="font-weight:normal;">${totalClassés} classé${totalClassés > 1 ? 's' : ''} au total</span>
+        </td>`;
+      tbody.appendChild(trGroup);
+
+      lastDiscipline = discipline;
+    }
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${obj[mapKeys['classement']] || ''}</td>
+      <td>${obj[mapKeys['nom']] || ''}</td>
+      <td>${obj[mapKeys['prenom']] || ''}</td>
+      <td>${obj[mapKeys['club']] || ''}</td>
+      <td>${obj[mapKeys['nom du chien']] || ''}</td>
+      <td>${obj[mapKeys['nombre de course']] || ''}</td>
+      <td>${obj[mapKeys['total points']] || ''}</td>
+      <td>${obj[mapKeys['course 1']] || ''}</td>
+      <td>${obj[mapKeys['course 2']] || ''}</td>
+      <td>${obj[mapKeys['course 3']] || ''}</td>
+            <td>${obj[mapKeys['course 4']] || ''}</td>
+      <td>${obj[mapKeys['course 5']] || ''}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function reset() {
+  document.getElementById('nomInput').value = '';
+  document.getElementById('prenomInput').value = '';
+  document.querySelector('#resultsTable tbody').innerHTML = '';
+  document.getElementById('feedback').textContent = '🔁 Recherche réinitialisée';
+}
+
+function exportCSV() {
+  const rows = document.querySelectorAll('#resultsTable tbody tr:not(.category-row)');
+  if (!rows.length) return alert('❌ Aucun résultat à exporter');
+  let csv = 'Classement,Nom,Prénom,Discipline,Club,Nom du chien,Nombre de course,Total Top 5,Course 1,Course 2,Course 3,Course 4,Course 5\n';
+  rows.forEach(row => {
+    const cells = Array.from(row.cells).map(c => `"${c.textContent}"`);
+    csv += cells.join(',') + '\n';
+  });
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'resultats_filtres.csv';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+function exportPDF() {
+  const rows = document.querySelectorAll('#resultsTable tbody tr');
+  if (!rows.length) return alert('❌ Aucun résultat à exporter');
+  const win = window.open('', '', 'width=800,height=600');
+  let html = `
+  <html><head><title>Résultats PDF</title>
+  <style>
+    @page { size: landscape; }
+    body { font-family: sans-serif; padding: 1em; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 0.5em;
+      text-align: left;
+      font-size: 0.9em;
+    }
+    th { background-color: #007BFF; color: white; }
+    .category-row { background-color: #e0ebff; font-weight: bold; }
+  </style>
+  </head><body>
+  <h2>Résultats filtrés</h2>
+  <table><thead><tr>
+    <th>Classement</th><th>Nom</th><th>Prénom</th><th>Club</th><th>Nom du chien</th><th>Nombre de course</th><th>Total Top 5</th>
+    <th>Course 1</th><th>Course 2</th><th>Course 3</th>
+    <th>Course 4</th><th>Course 5</th>
+  </tr></thead><tbody>
+  `;
+
+  rows.forEach(row => {
+    if (row.classList.contains('category-row')) {
+      html += `<tr class="category-row"><td colspan="12">${row.textContent}</td></tr>`;
+    } else {
+      const cells = Array.from(row.cells).map(c => `<td>${c.textContent}</td>`).join('');
+      html += `<tr>${cells}</tr>`;
+    }
+  });
+
+  html += '</tbody></table></body></html>';
+  win.document.write(html);
+  win.document.close();
+  win.print();
+}
+</script>
+<footer style="text-align: center; margin-top: 2em; font-size: 0.9em; color: #555;">
+  🛠️ Créé par <strong>Robert AURAY</strong> — version <strong>3.5</strong>
+</footer>
+</body>
+</html>

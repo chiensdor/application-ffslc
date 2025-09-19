@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>🔍 Recherche par Licence - Chargement Automatique</title>
+  <style>
+    body { font-family: sans-serif; background: #f4f7fa; padding: 1em; margin: 0; }
+    h1 { text-align: center; color: #007BFF; }
+    #feedback { text-align: center; margin: 1em; font-weight: bold; }
+    .controls {
+      display: flex; flex-wrap: wrap; justify-content: center;
+      gap: 0.5em; margin-bottom: 1em;
+    }
+    input[type="text"], button {
+      padding: 0.5em; border-radius: 4px; border: 1px solid #ccc;
+    }
+    button {
+      background: #007BFF; color: white; cursor: pointer;
+    }
+    button:hover { background: #0056b3; }
+    table {
+      width: 100%; border-collapse: collapse; margin-top: 1em;
+    }
+    th, td {
+      border: 1px solid #ccc; padding: 0.5em; font-size: 0.9em; text-align: left;
+    }
+    th { background: #007BFF; color: white; }
+  </style>
+</head>
+<body>
+
+<h1>🔍 Recherche par Licence - Chargement Automatique</h1>
+<div class="controls">
+  <input type="text" id="licenceInput" placeholder="Rechercher une licence" />
+  <button onclick="search()">Rechercher</button>
+  <button onclick="reset()">Réinitialiser</button>
+  <button onclick="exportCSV()">Export CSV</button>
+  <button onclick="exportPDF()">Export PDF</button>
+  <button onclick="window.history.back()">⬅️ Retour</button>
+</div>
+
+<div id="feedback">📂 Chargement automatique en cours...</div>
+
+<table id="resultsTable">
+  <thead>
+    <tr>
+      <th>Licence</th><th>Nom</th><th>Prénom</th><th>Catégorie</th>
+      <th>Course</th><th>Chien</th><th>Points</th><th>Puce/Tatouage</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<script>
+const csvURL = 'https://raw.githubusercontent.com/chiensdor/fichier-canicross/main/feuille%20resultats%20courses%20general.csv';
+let rawCSVLines = [], headers = [], mapKeys = {};
+const separator = ';';
+const alias = {
+  licence: ['licence'],
+  nom: ['nom'],
+  prenom: ['prenom', 'prénom'],
+  categorie: ['categorie', 'catégorie'],
+  'nom de la course': ['nom de la course', 'course'],
+  'nom du chien': ['nom du chien', 'chien'],
+  'points course': ['points course', 'points'],
+  puce: ['puce', 'puce ou tatouage']
+};
+
+function normalize(str) {
+  return str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+}
+
+fetch(csvURL)
+  .then(response => response.text())
+  .then(text => {
+    const rows = text.split('\n').filter(r => r.trim());
+    headers = rows[0].split(separator).map(h => h.trim());
+    rawCSVLines = rows.slice(1);
+    mapKeys = {};
+    headers.forEach(h => {
+      const key = normalize(h);
+      Object.entries(alias).forEach(([stdKey, variants]) => {
+        if (variants.includes(key)) mapKeys[stdKey] = h;
+      });
+    });
+    document.getElementById('feedback').textContent = `✅ Chargement automatique réussi (${rawCSVLines.length} lignes)`;
+  })
+  .catch(() => {
+    document.getElementById('feedback').textContent = `❌ Échec du chargement automatique`;
+  });
+
+function search() {
+  const query = normalize(document.getElementById('licenceInput').value);
+  const results = rawCSVLines.map(line => {
+    const values = line.split(separator);
+    const row = headers.reduce((obj, h, i) => { obj[h] = values[i] || ''; return obj; }, {});
+    return row;
+  }).filter(row => normalize(row[mapKeys['licence']] || '').includes(query));
+  displayResults(results);
+}
+
+function displayResults(results) {
+  const tbody = document.querySelector('#resultsTable tbody');
+  tbody.innerHTML = '';
+  if (!results.length) {
+    document.getElementById('feedback').textContent = '❌ Aucun résultat';
+    return;
+  }
+  document.getElementById('feedback').textContent = `🔎 ${results.length} résultat(s) trouvé(s)`;
+  results.forEach(obj => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${obj[mapKeys['licence']] || ''}</td>
+      <td>${obj[mapKeys['nom']] || ''}</td>
+      <td>${obj[mapKeys['prenom']] || ''}</td>
+      <td>${obj[mapKeys['categorie']] || ''}</td>
+      <td>${obj[mapKeys['nom de la course']] || ''}</td>
+      <td>${obj[mapKeys['nom du chien']] || ''}</td>
+      <td>${obj[mapKeys['points course']] || ''}</td>
+      <td>${obj[mapKeys['puce']] || ''}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function reset() {
+  document.getElementById('licenceInput').value = '';
+  document.querySelector('#resultsTable tbody').innerHTML = '';
+  document.getElementById('feedback').textContent = '🔁 Recherche réinitialisée';
+}
+
+function exportCSV() {
+  const rows = document.querySelectorAll('#resultsTable tbody tr');
+  if (!rows.length) return alert('❌ Aucun résultat à exporter');
+  let csv = 'Licence,Nom,Prénom,Catégorie,Course,Chien,Points,Puce/Tatouage\n';
+  rows.forEach(row => {
+    const cells = Array.from(row.cells).map(c => `"${c.textContent}"`);
+    csv += cells.join(',') + '\n';
+  });
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'resultats.csv';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+function exportPDF() {
+  const rows = document.querySelectorAll('#resultsTable tbody tr');
+  if (!rows.length) return alert('❌ Aucun résultat à exporter');
+  const win = window.open('', '', 'width=800,height=600');
+  let html = `
+    <html><head><title>Résultats PDF</title>
+    <style>
+      @page { size: landscape; }
+      body { font-family: sans-serif; padding: 1em; }
+      table { width: 100%; border-collapse: collapse; }
+      th, td { border: 1px solid #ccc; padding: 0.5em; text-align: left; font-size: 0.9em; }
+      th { background-color: #007BFF; color: white; }
+    </style></head><body>
+    <h2>Résultats filtrés</h2>
+    <table><thead><tr>
+      <th>Licence</th><th>Nom</th><th>Prénom</th><th>Catégorie</th>
+      <th>Course</th><th>Chien</th><th>Points</th><th>Puce/Tatouage</th>
+    </tr></thead><tbody>
+  `;
+  rows.forEach(row => {
+    const cells = Array.from(row.cells).map(c => `<td>${c.textContent}</td>`).join('');
+    html += `<tr>${cells}</tr>`;
+  });
+  html += '</tbody></table></body></html>';
+  win.document.write(html);
+  win.document.close();
+  win.print();
+}
+</script>
+
+<footer style="text-align: center; margin-top: 2em; font-size: 0.9em; color: #555;">
+  🛠️ Créé par <strong>Robert AURAY</strong> — version <strong>1.0</strong>
+</footer>
+</body>
+</html>

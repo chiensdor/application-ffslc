@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🔍 Recherche par Nom et Prénom - Version 3.3</title>
+  <style>
+    body { font-family: sans-serif; background: #f4f7fa; padding: 1em; margin: 0; }
+    h1 { text-align: center; color: #007BFF; margin-bottom: 1em; font-size: 1.5em; }
+    #feedback { text-align: center; font-weight: bold; margin-bottom: 1em; }
+    .controls {
+      display: flex; justify-content: center; flex-wrap: wrap;
+      gap: 0.5em; margin-bottom: 1em;
+    }
+    input, button {
+      padding: 0.5em; border-radius: 4px; border: 1px solid #ccc;
+    }
+    input[type="text"] { width: 200px; }
+    button {
+      background-color: #007BFF; color: white; border: none; cursor: pointer;
+    }
+    button:hover { background-color: #0056b3; }
+    table {
+      width: 100%; border-collapse: collapse; margin-top: 1em;
+    }
+    th, td {
+      border: 1px solid #ccc; padding: 0.5em;
+      text-align: left; font-size: 0.9em;
+    }
+    th { background-color: #007BFF; color: white; }
+    @media screen and (max-width: 600px) {
+      table, thead, tbody, th, td, tr { display: block; }
+      tr { margin-bottom: 1em; background: #fff; border-radius: 4px; }
+      td { padding: 0.5em; border-bottom: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+<header style="text-align:center; margin-bottom:1em;">
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🔍 Recherche par Nom et Prénom - Version 3.3</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f4f7fa;
+      padding: 1em;
+      margin: 0;
+    }
+    h1 {
+      text-align: center;
+      color: #007BFF;
+      font-size: 1.5em;
+      margin-bottom: 1em;
+    }
+    #feedback {
+      text-align: center;
+      font-weight: bold;
+      margin-bottom: 1em;
+    }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.5em;
+      margin-bottom: 1em;
+    }
+    input, button {
+      padding: 0.5em;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    input[type="text"] {
+      width: 200px;
+    }
+    button {
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1em;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 0.5em;
+      text-align: left;
+      font-size: 0.9em;
+    }
+    th {
+      background-color: #007BFF;
+      color: white;
+    }
+    @media screen and (max-width: 600px) {
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+      tr {
+        margin-bottom: 1em;
+        background: #fff;
+        border-radius: 4px;
+      }
+      td {
+        padding: 0.5em;
+        border-bottom: 1px solid #ccc;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<h1>🔍 Recherche par Nom et Prénom - Version 3.3</h1>
+
+<div class="controls">
+  <input type="text" id="nomInput" placeholder="Nom" />
+  <input type="text" id="prenomInput" placeholder="Prénom" />
+  <button onclick="search()">Rechercher</button>
+  <button onclick="reset()">🔁 Réinitialiser</button>
+  <button onclick="exportCSV()">📁 Export CSV</button>
+  <button onclick="exportPDF()">🖨️ Export PDF</button>
+  <button onclick="window.history.back()">⬅️ Retour</button>
+</div>
+
+<div id="feedback">⏳ Chargement automatique du fichier...</div>
+
+<table id="resultsTable">
+  <thead>
+    <tr>
+      <th>Licence</th>
+      <th>Nom</th>
+      <th>Prénom</th>
+      <th>Catégorie</th>
+      <th>Nom de la course</th>
+      <th>Nom du chien</th>
+      <th>Points course</th>
+      <th>PUCE OU TATOUAGE</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<script>
+const csvURL = 'https://raw.githubusercontent.com/chiensdor/fichier-canicross/main/feuille%20resultats%20courses%20general.csv';
+let rawCSVLines = [], headers = [], mapKeys = {};
+const separator = ';';
+const alias = {
+  licence: ['licence'],
+  nom: ['nom'],
+  prenom: ['prenom', 'prénom'],
+  categorie: ['categorie', 'catégorie'],
+  'nom de la course': ['nom de la course', 'course'],
+  'nom du chien': ['nom du chien', 'chien'],
+  'points course': ['points course', 'points'],
+  puce: ['puce', 'puce ou tatouage']
+};
+
+function normalize(str) {
+  return str.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/ï»¿/g, '').replace(/\s+/g, ' ').trim();
+}
+
+console.time('Chargement CSV');
+fetch(csvURL)
+  .then(response => response.text())
+  .then(text => {
+    console.timeEnd('Chargement CSV');
+    const rows = text.split('\n').filter(r => r.trim());
+    headers = rows[0].split(separator).map(h => h.trim());
+    rawCSVLines = rows.slice(1);
+    headers.forEach(h => {
+      const key = normalize(h);
+      Object.entries(alias).forEach(([stdKey, variants]) => {
+        if (variants.includes(key)) mapKeys[stdKey] = h;
+      });
+    });
+    document.getElementById('feedback').textContent = `✅ Fichier chargé (${rawCSVLines.length} lignes)`;
+  })
+  .catch(() => {
+    document.getElementById('feedback').textContent = '❌ Échec du chargement automatique';
+  });
+
+function search() {
+  const nomVal = normalize(document.getElementById('nomInput').value);
+  const prenomVal = normalize(document.getElementById('prenomInput').value);
+  const results = [];
+
+  rawCSVLines.forEach(line => {
+    const values = line.split(separator).map(v => v.trim());
+    const rowObj = headers.reduce((obj, h, i) => { obj[h] = values[i] || ''; return obj; }, {});
+    const nom = normalize(rowObj[mapKeys['nom']] || '');
+    const prenom = normalize(rowObj[mapKeys['prenom']] || '');
+    if ((nomVal ? nom.includes(nomVal) : true) && (prenomVal ? prenom.includes(prenomVal) : true)) {
+      results.push(rowObj);
+    }
+  });
+
+  const tbody = document.querySelector('#resultsTable tbody');
+  tbody.innerHTML = '';
+  if (!results.length) {
+    document.getElementById('feedback').textContent = '❌ Aucun résultat';
+    return;
+  }
+  document.getElementById('feedback').textContent = `🔎 ${results.length} résultat(s) trouvé(s)`;
+  results.forEach(obj => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${obj[mapKeys['licence']] || ''}</td>
+      <td>${obj[mapKeys['nom']] || ''}</td>
+      <td>${obj[mapKeys['prenom']] || ''}</td>
+      <td>${obj[mapKeys['categorie']] || ''}</td>
+      <td>${obj[mapKeys['nom de la course']] || ''}</td>
+      <td>${obj[mapKeys['nom du chien']] || ''}</td>
+      <td>${obj[mapKeys['points course']] || ''}</td>
+      <td>${obj[mapKeys['puce']] || ''}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function reset() {
+  document.getElementById('nomInput').value = '';
+  document.getElementById('prenomInput').value = '';
+  document.querySelector('#resultsTable tbody').innerHTML = '';
+  document.getElementById('feedback').textContent = '🔁 Recherche réinitialisée';
+}
+
+function exportCSV() {
+  const rows = document.querySelectorAll('#resultsTable tbody tr');
+  if (!rows.length) return alert('❌ Aucun résultat à exporter');
+  let csv = 'Licence,Nom,Prénom,Catégorie,Nom de la course,Nom du chien,Points course,PUCE OU TATOUAGE\n';
+  rows.forEach(row => {
+    const cells = Array.from(row.cells).map(c => `"${c.textContent}"`);
+    csv += cells.join(',') + '\n';
+  });
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'resultats_filtres.csv';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+function exportPDF() {
+  const rows = document.querySelectorAll('#resultsTable tbody tr');
+  if (!rows.length) return alert('❌ Aucun résultat à exporter');
+  const win = window.open('', '', 'width=800,height=600');
+  let html = `
+    <html><head><title>Résultats PDF</title>
+    <style>
+      @page { size: landscape; }
+      body { font-family: sans-serif; padding: 1em; }
+      table { width: 100%; border-collapse: collapse; }
+      th, td {
+        border: 1px solid #ccc;
+        padding: 0.5em;
+        text-align: left;
+        font-size: 0.9em;
+        font-size: 0.9em;
+      }
+      th { background-color: #007BFF; color: white; }
+    </style>
+    </head><body>
+    <h2>Résultats filtrés</h2>
+    <table><thead><tr>
+      <th>Licence</th><th>Nom</th><th>Prénom</th><th>Catégorie</th>
+      <th>Nom de la course</th><th>Nom du chien</th>
+      <th>Points course</th><th>PUCE OU TATOUAGE</th>
+    </tr></thead><tbody>
+  `;
+  rows.forEach(row => {
+    const cells = Array.from(row.cells).map(c => `<td>${c.textContent}</td>`).join('');
+    html += `<tr>${cells}</tr>`;
+  });
+  html += '</tbody></table></body></html>';
+  win.document.write(html);
+  win.document.close();
+  win.print();
+}
+</script>
+
+<footer style="text-align: center; margin-top: 2em; font-size: 0.9em; color: #555;">
+  🛠️ Créé par <strong>Robert AURAY</strong> — version <strong>3.3</strong>
+</footer>
+
+</body>
+</html>
