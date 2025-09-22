@@ -82,11 +82,20 @@
     <button class="discipline-button" onclick="openLink('https://drive.google.com/file/d/1I0EYZx8exauKcBz-Aq4n5gq8HOmTFWnl/view?usp=drive_link')">⛷️ Ski Joëring</button>
   </div>
 
+  <!-- 🔙 Bouton retour ajouté -->
+  <div style="margin-top: 30px;">
+    <button class="discipline-button" onclick="goBack()">🔙 Retour au menu précédent</button>
+  </div>
+
   <footer>🛠️ Réalisé par <strong>Robert AURAY</strong> – Version <strong>1.14</strong></footer>
 
   <script>
     function openLink(url) {
       window.open(url, '_blank');
+    }
+
+    function goBack() {
+      window.history.back();
     }
   </script>
 
