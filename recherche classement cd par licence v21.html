@@ -71,10 +71,10 @@ let rawCSVLines = [], headers = [], mapKeys = {};
 const separator = ';';
 const alias = {
   classement: ['classement'],
-  nom: ['nom'],
-  prenom: ['prenom', 'prénom'],
-  discipline: ['catégorie', 'categorie'],
-  'club': ['club', 'Club'],
+  nom: ['nom', 'Nom', 'NOM'],
+  prenom: ['prenom', 'prénom', 'Prénom', 'Prenom'],
+  discipline: ['catégorie', 'categorie', 'Catégorie', 'Categorie'],
+  'club': ['club', 'Club', 'CLUB'],
   'nom du chien': ['nom du chien', 'chien'],
   'nombre de course': ['nombre de course', 'nombre de courses'],
   'total points': ['total points', 'Total Top 5', 'Total', 'total top 5'],
@@ -250,3 +250,4 @@ function exportPDF() {
 </footer>
 </body>
 </html>
+
