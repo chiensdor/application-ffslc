@@ -57,10 +57,10 @@ let rawCSVLines = [], headers = [], mapKeys = {};
 const separator = ';';
 const alias = {
   licence: ['licence'],
-  nom: ['nom'],
-  prenom: ['prenom', 'prénom'],
-  categorie: ['categorie', 'catégorie'],
-  'nom de la course': ['nom de la course', 'course'],
+  nom: ['nom', 'Nom'],
+  prenom: ['prenom', 'prénom', 'Prénom'],
+  categorie: ['categorie', 'catégorie', 'Catégorie', 'Categorie'],
+  'nom de la course': ['nom de la course', 'course', 'COURSE', 'COURSES'],
   'nom du chien': ['nom du chien', 'chien'],
   'points course': ['points course', 'points'],
   puce: ['puce', 'puce ou tatouage']
@@ -180,4 +180,5 @@ function exportPDF() {
   🛠️ Créé par <strong>Robert AURAY</strong> — version <strong>1.0</strong>
 </footer>
 </body>
+
 </html>
