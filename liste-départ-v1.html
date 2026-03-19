@@ -361,7 +361,6 @@ tbody tr:hover {
 </style>
 </head>
 <body>
-
 <div class="header-bar">
     <div>
         <div class="header-title">FFSLC – Générateur de listes de départ</div>
@@ -484,260 +483,129 @@ tbody tr:hover {
     </div>
 
 </div>
+<div class="header-bar">
+    <div>
+        <div class="header-title">FFSLC – Générateur de listes de départ</div>
+        <div class="header-sub">Fusion inscrits + résultats, tri par moyenne, export et impression</div>
+        <div class="header-actions">
+            <span class="badge">Mode sombre auto</span>
+            <span class="badge">Installable (PWA)</span>
+        </div>
+    </div>
+    <div class="header-actions">
+        <button class="btn-ghost" id="btnInstallPWA" style="display:none;">
+            📲 Installer l’application
+        </button>
+    </div>
+</div>
 
+<div class="container">
+
+    <div class="grid">
+        <div class="card">
+            <h3><span class="icon">📂</span> Fichiers d’entrée</h3>
+            <small>Charge d’abord les inscrits, puis les résultats.</small>
+
+            <label>Fichier des inscrits (FFSLC export) :</label>
+            <input type="file" id="fichierInscrits" accept=".csv,.xls,.xlsx">
+
+            <label>Fichier des résultats (classements) :</label>
+            <input type="file" id="fichierResultats" accept=".csv,.xls,.xlsx">
+
+            <div class="btn-row">
+                <button class="btn-primary" id="btnFusion">
+                    🔗 Fusionner inscrits + résultats
+                </button>
+                <button class="btn-ghost" id="btnReset">
+                    ♻️ Réinitialiser
+                </button>
+            </div>
+
+            <div style="margin-top:10px;font-size:0.8rem;color:var(--text-muted);">
+                <div>✔ Normalisation des noms de chiens, licences et disciplines.</div>
+                <div>✔ Tri automatique par moyenne après fusion.</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3><span class="icon">⏱️</span> Paramètres des départs</h3>
+            <small>Heures de départ et intervalle entre concurrents.</small>
+
+            <label>Heure de départ – Canicross :</label>
+            <input type="time" id="heureCanicross" value="09:00">
+
+            <label>Heure de départ – Canivtt :</label>
+            <input type="time" id="heureCanivtt" value="10:00">
+
+            <label>Heure de départ – Canipédicycle :</label>
+            <input type="time" id="heureCanipedicycle" value="11:00">
+
+            <label>Intervalle entre départs (secondes) :</label>
+            <input type="number" id="intervalle" value="30" min="1">
+
+            <div class="btn-row">
+                <button class="btn-accent" id="btnGenererListes">
+                    📝 Générer les listes de départ (CSV)
+                </button>
+                <button class="btn-ghost" id="btnImprimer">
+                    🖨️ Imprimer la liste affichée
+                </button>
+            </div>
+
+            <div style="margin-top:10px;font-size:0.8rem;color:var(--text-muted);">
+                <div>✔ Export séparé par discipline (Canicross, Canivtt, Canipédicycle).</div>
+                <div>✔ Heures visibles dans le tableau avant impression.</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <div class="table-toolbar">
+            <div class="table-toolbar-left">
+                <input type="text" id="searchInput" class="search-input" placeholder="🔍 Rechercher (nom, chien, club, licence)…">
+                <select id="filterDiscipline" class="filter">
+                    <option value="">Toutes disciplines</option>
+                    <option value="canicross">Canicross</option>
+                    <option value="canivtt">Canivtt</option>
+                    <option value="canipedicycle">Canipédicycle</option>
+                </select>
+                <select id="filterCategorie" class="filter">
+                    <option value="">Toutes catégories</option>
+                </select>
+            </div>
+            <div class="table-toolbar-right">
+                <span class="chip" id="chipStats">0 inscrits fusionnés</span>
+            </div>
+        </div>
+        <div class="table-container">
+            <table id="tableResultat">
+                <thead>
+                    <tr>
+                        <th class="sortable" data-sort="licence">Licence <span class="sort-indicator">⇅</span></th>
+                        <th class="sortable" data-sort="nom">Nom <span class="sort-indicator">⇅</span></th>
+                        <th class="sortable" data-sort="prenom">Prénom <span class="sort-indicator">⇅</span></th>
+                        <th class="sortable" data-sort="categorie">Catégorie <span class="sort-indicator">⇅</span></th>
+                        <th class="sortable" data-sort="club">Club <span class="sort-indicator">⇅</span></th>
+                        <th class="sortable" data-sort="nom_du_chien">Nom du chien <span class="sort-indicator">⇅</span></th>
+                        <th>Race</th>
+                        <th>Puce</th>
+                        <th class="sortable" data-sort="moyenne">Moyenne <span class="sort-indicator">⇅</span></th>
+                        <th class="sortable" data-sort="nombreCourses">Courses <span class="sort-indicator">⇅</span></th>
+                        <th class="sortable" data-sort="discipline">Discipline <span class="sort-indicator">⇅</span></th>
+                        <th class="sortable" data-sort="heure_depart">Heure départ <span class="sort-indicator">⇅</span></th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="footer">
+        FFSLC – Outil listes de départ • Conception <strong>Robert AURAY</strong>
+    </div>
+
+</div>
 <script>
-let inscrits = [];
-let resultats = [];
-let resultatsGlobaux = [];
-let filteredView = [];
-let currentSort = { key: 'moyenne', dir: 'asc' };
-let deferredPrompt = null;
-
-// ----------- UTILITAIRES TEXTE -----------
-function clean(txt) {
-    if (txt === undefined || txt === null) return "";
-    return txt.toString().trim().toLowerCase()
-        .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-}
-
-function normaliserDiscipline(txt) {
-    const t = clean(txt);
-    if (t.includes("vtt")) return "canivtt";
-    if (t.includes("pedi")) return "canipedicycle";
-    if (t.includes("cycle")) return "canipedicycle";
-    if (t.includes("cross")) return "canicross";
-    return t || "";
-}
-
-function badgeDiscipline(d) {
-    if (d === "canicross") return '<span class="badge-discipline badge-canicross">Canicross</span>';
-    if (d === "canivtt") return '<span class="badge-discipline badge-canivtt">Canivtt</span>';
-    if (d === "canipedicycle") return '<span class="badge-discipline badge-canipedicycle">Canipédicycle</span>';
-    return '';
-}
-
-// ----------- LECTURE FICHIERS -----------
-function lireFichier(fichier, callback) {
-    if (!fichier) return;
-    const ext = fichier.name.split('.').pop().toLowerCase();
-
-    if (ext === "csv") {
-        Papa.parse(fichier, {
-            header: true,
-            skipEmptyLines: true,
-            complete: res => callback(res.data)
-        });
-    } else {
-        const reader = new FileReader();
-        reader.onload = e => {
-            const data = new Uint8Array(e.target.result);
-            const workbook = XLSX.read(data, { type: "array" });
-            const sheet = workbook.Sheets[workbook.SheetNames[0]];
-            const json = XLSX.utils.sheet_to_json(sheet, { defval: "" });
-            callback(json);
-        };
-        reader.readAsArrayBuffer(fichier);
-    }
-}
-
-// ----------- CHARGEMENT INSCRITS -----------
-document.getElementById("fichierInscrits").addEventListener("change", e => {
-    lireFichier(e.target.files[0], data => {
-        inscrits = data;
-        alert("Fichier inscrits chargé (" + inscrits.length + " lignes).");
-    });
-});
-
-// ----------- CHARGEMENT RÉSULTATS -----------
-document.getElementById("fichierResultats").addEventListener("change", e => {
-    lireFichier(e.target.files[0], data => {
-        resultats = calculerMoyennes(data);
-        alert("Fichier résultats chargé (" + resultats.length + " concurrents).");
-    });
-});
-
-// ----------- CALCUL MOYENNES -----------
-function calculerMoyennes(data) {
-    const groupes = {};
-
-    data.forEach(ligne => {
-        const licence = clean(ligne["Licence"]);
-        const chien = clean(ligne["Nom du chien"]);
-        if (!licence && !chien) return;
-
-        const cle = licence + "_" + chien;
-
-        if (!groupes[cle]) {
-            groupes[cle] = {
-                licence: licence,
-                nom_du_chien: ligne["Nom du chien"] || "",
-                totalClassement: 0,
-                nombreCourses: 0
-            };
-        }
-
-        const classement = Number(ligne["classement dans la course"]);
-        if (!isNaN(classement)) {
-            groupes[cle].totalClassement += classement;
-            groupes[cle].nombreCourses++;
-        }
-    });
-
-    return Object.values(groupes).map(g => ({
-        ...g,
-        moyenne: g.nombreCourses > 0 ? (g.totalClassement / g.nombreCourses).toFixed(2) : ""
-    }));
-}
-
-// ----------- FUSION INSCRITS + RÉSULTATS -----------
-function fusionnerInscritsResultats(inscrits, resultats) {
-    const fusion = inscrits.map(inscrit => {
-        const licence = clean(inscrit["Licence"]);
-        const chien = clean(inscrit["#1 Chien - nom"]);
-
-        const r = resultats.find(x =>
-            clean(x.licence) === licence &&
-            clean(x.nom_du_chien) === chien
-        );
-
-        return {
-            licence: inscrit["Licence"] || "",
-            nom: inscrit["Nom de famille"] || "",
-            prenom: inscrit["Prénom"] || "",
-            categorie: inscrit["Catégorie"] || "",
-            club: inscrit["Club"] || "",
-            nom_du_chien: inscrit["#1 Chien - nom"] || "",
-            race: inscrit["#1 Chien - race"] || "",
-            puce: inscrit["#1 Chien - puce"] || "",
-            discipline: normaliserDiscipline(inscrit["Course"]),
-            moyenne: r ? r.moyenne : "",
-            nombreCourses: r ? r.nombreCourses : "",
-            heure_depart: ""
-        };
-    });
-
-    // tri auto par moyenne (option 3 = oui)
-    fusion.sort((a, b) => {
-        const ma = a.moyenne === "" ? 9999 : parseFloat(a.moyenne);
-        const mb = b.moyenne === "" ? 9999 : parseFloat(b.moyenne);
-        return ma - mb;
-    });
-
-    return fusion;
-}
-
-// ----------- AFFICHAGE TABLEAU -----------
-function mettreAJourStats() {
-    const chip = document.getElementById("chipStats");
-    chip.textContent = filteredView.length + " inscrits affichés";
-}
-
-function remplirFiltreCategories() {
-    const select = document.getElementById("filterCategorie");
-    const cats = new Set();
-    resultatsGlobaux.forEach(r => {
-        if (r.categorie) cats.add(r.categorie);
-    });
-    const current = select.value;
-    select.innerHTML = '<option value="">Toutes catégories</option>';
-    Array.from(cats).sort().forEach(c => {
-        const opt = document.createElement("option");
-        opt.value = c;
-        opt.textContent = c;
-        select.appendChild(opt);
-    });
-    if (current) select.value = current;
-}
-
-function appliquerFiltres() {
-    const q = clean(document.getElementById("searchInput").value);
-    const d = document.getElementById("filterDiscipline").value;
-    const c = document.getElementById("filterCategorie").value;
-
-    filteredView = resultatsGlobaux.filter(r => {
-        if (d && r.discipline !== d) return false;
-        if (c && r.categorie !== c) return false;
-
-        if (!q) return true;
-
-        const hay = [
-            r.licence,
-            r.nom,
-            r.prenom,
-            r.club,
-            r.nom_du_chien,
-            r.categorie
-        ].map(clean).join(" ");
-
-        return hay.includes(q);
-    });
-
-    trierEtAfficher();
-}
-
-function trierEtAfficher() {
-    const key = currentSort.key;
-    const dir = currentSort.dir;
-
-    filteredView.sort((a, b) => {
-        let va = a[key];
-        let vb = b[key];
-
-        if (key === "moyenne" || key === "nombreCourses") {
-            const na = va === "" ? 9999 : parseFloat(va);
-            const nb = vb === "" ? 9999 : parseFloat(vb);
-            return dir === "asc" ? na - nb : nb - na;
-        }
-
-        va = clean(va);
-        vb = clean(vb);
-        if (va < vb) return dir === "asc" ? -1 : 1;
-        if (va > vb) return dir === "asc" ? 1 : -1;
-        return 0;
-    });
-
-    afficherTableau(filteredView);
-    mettreAJourStats();
-}
-
-function afficherTableau(data) {
-    const tbody = document.querySelector("#tableResultat tbody");
-    tbody.innerHTML = "";
-
-    data.forEach(r => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-            <td>${r.licence}</td>
-            <td>${r.nom}</td>
-            <td>${r.prenom}</td>
-            <td>${r.categorie}</td>
-            <td>${r.club}</td>
-            <td>${r.nom_du_chien}</td>
-            <td>${r.race}</td>
-            <td>${r.puce}</td>
-            <td>${r.moyenne}</td>
-            <td>${r.nombreCourses}</td>
-            <td>${badgeDiscipline(r.discipline)}</td>
-            <td>${r.heure_depart}</td>
-        `;
-        tbody.appendChild(tr);
-    });
-}
-
-// ----------- BOUTON FUSION -----------
-document.getElementById("btnFusion").addEventListener("click", () => {
-    if (inscrits.length === 0 || resultats.length === 0) {
-        alert("Merci de charger les fichiers inscrits et résultats avant de fusionner.");
-        return;
-    }
-
-    resultatsGlobaux = fusionnerInscritsResultats(inscrits, resultats);
-    filteredView = [...resultatsGlobaux];
-    remplirFiltreCategories();
-    appliquerFiltres();
-    alert("Fusion terminée : " + resultatsGlobaux.length + " inscrits.");
-});
-
 // ----------- EXPORT CSV -----------
 function exporterCSV(data, nomFichier) {
     if (!data || data.length === 0) return;
@@ -799,25 +667,6 @@ document.getElementById("btnGenererListes").addEventListener("click", () => {
     resultatsGlobaux = [...listeCanicross, ...listeCanivtt, ...listeCanipedicycle];
     appliquerFiltres();
     alert("Listes de départ générées et téléchargées.");
-});
-
-// ----------- RECHERCHE & FILTRES -----------
-document.getElementById("searchInput").addEventListener("input", appliquerFiltres);
-document.getElementById("filterDiscipline").addEventListener("change", appliquerFiltres);
-document.getElementById("filterCategorie").addEventListener("change", appliquerFiltres);
-
-// ----------- TRI COLONNES -----------
-document.querySelectorAll("#tableResultat th.sortable").forEach(th => {
-    th.addEventListener("click", () => {
-        const key = th.getAttribute("data-sort");
-        if (currentSort.key === key) {
-            currentSort.dir = currentSort.dir === "asc" ? "desc" : "asc";
-        } else {
-            currentSort.key = key;
-            currentSort.dir = "asc";
-        }
-        trierEtAfficher();
-    });
 });
 
 // ----------- BOUTON IMPRIMER -----------
